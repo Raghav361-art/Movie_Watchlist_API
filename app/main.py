@@ -1,22 +1,26 @@
-import stat
-
 from fastapi import FastAPI, Depends, HTTPException, status
-from . import models, schemas
+from httptools import HttpParserCallbackError
+from . import models, schemas, utils
 from .database import engine, get_db
 from sqlalchemy.orm import Session
 from typing import Annotated
 from sqlalchemy import select, update, delete
 
+
 models.Base.metadata.create_all(bind=engine)
 
+# Creates Sessions
 sessionDep = Annotated[Session, Depends(get_db)]
 
+# FastApi Instance
 app = FastAPI()
 
 @app.get("/")
 def root():
     return {"message": "hello"}
-
+#-----------------------------------------------------------------------------------------------------------------------
+# Creates Movies List
+#-----------------------------------------------------------------------------------------------------------------------
 @app.post("/movies")
 def create(movies: list[schemas.Movie], db: sessionDep):
 
@@ -31,8 +35,9 @@ def create(movies: list[schemas.Movie], db: sessionDep):
     for mov in list_movies: db.refresh(mov)
 
     return list_movies
-    
-
+#-----------------------------------------------------------------------------------------------------------------------
+# Lists All The Movies
+#-----------------------------------------------------------------------------------------------------------------------
 @app.get("/movies", response_model=list[schemas.MovieResponse])
 def listAll(genre: str | None = None, watched: bool | None = None, limit: int | None = None, offset: int | None = None, sort: str | None = None, db: sessionDep = None):
     statement = select(models.Movie)
@@ -57,7 +62,9 @@ def listAll(genre: str | None = None, watched: bool | None = None, limit: int | 
 
     movies = db.execute(statement).scalars().all()
     return movies
-
+#-----------------------------------------------------------------------------------------------------------------------
+# Searching a Movie By ID
+#-----------------------------------------------------------------------------------------------------------------------
 @app.get("/movies/{id}")
 def search(id: int, db: sessionDep):
     statement = select(models.Movie).where(models.Movie.id == id)
@@ -66,7 +73,9 @@ def search(id: int, db: sessionDep):
     if not movie:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"movie with id: {id} not found")
     return movie
-
+#-----------------------------------------------------------------------------------------------------------------------
+# Updates Movies By ID
+#-----------------------------------------------------------------------------------------------------------------------
 @app.put("/movies/{id}")
 def updateVal(id: int, movie: schemas.Movie, db: sessionDep):
     statement = update(models.Movie).where(models.Movie.id == id).values(**movie.model_dump())
@@ -76,9 +85,9 @@ def updateVal(id: int, movie: schemas.Movie, db: sessionDep):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"movie with id: {id} not found")
     db.commit()
     return {"success!": "values updated"}
-
-
-
+#-----------------------------------------------------------------------------------------------------------------------
+# Deletes Movies By ID
+#-----------------------------------------------------------------------------------------------------------------------
 @app.delete("/movies/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def deleteVal(id: int, db: sessionDep):
     statement = delete(models.Movie).where(models.Movie.id == id)
@@ -88,19 +97,35 @@ def deleteVal(id: int, db: sessionDep):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"movie with id: {id} not found")
     db.commit()
     return
-
-
+#-----------------------------------------------------------------------------------------------------------------------
+# Creates New User
+#-----------------------------------------------------------------------------------------------------------------------
 @app.post("/user", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponce)
-def createUser(user: schemas.User, db: sessionDep):
+def createUser(user: schemas.UserRequest, db: sessionDep):
+    user.password = utils.createHash(user.password)
     statement = models.Users(**user.model_dump())
     db.add(statement)
     db.commit()
     db.refresh(statement)
     return statement
-
+#-----------------------------------------------------------------------------------------------------------------------
+# Lists All The Users
+#-----------------------------------------------------------------------------------------------------------------------
 @app.get("/user", response_model=list[schemas.UserResponce])
 def listUses(db: sessionDep):
     statement = select(models.Users)
 
     users = db.execute(statement).scalars().all()
     return users
+#-----------------------------------------------------------------------------------------------------------------------
+# Searching a User By ID
+#-----------------------------------------------------------------------------------------------------------------------
+@app.get("/user/{id}", response_model=schemas.UserResponce)
+def search(id: int, db: sessionDep):
+    statement = select(models.Users).where(models.Users.id == id)
+    user = db.execute(statement).scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {id} not found")
+
+    return user
