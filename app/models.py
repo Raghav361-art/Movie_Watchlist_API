@@ -1,7 +1,7 @@
-import email
+from sqlalchemy.orm import relationship
 
 from .database import Base
-from sqlalchemy import Column, INTEGER, String, BOOLEAN, text
+from sqlalchemy import Column, INTEGER, ForeignKey, String, BOOLEAN, UniqueConstraint, text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 
 class Movie(Base):
@@ -15,6 +15,9 @@ class Movie(Base):
     watched = Column(BOOLEAN, nullable=False, server_default="false")
     rating = Column(INTEGER)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    user_id = Column(INTEGER, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    user = relationship("Users")
 
 class Users(Base):
     __tablename__ = "users"
@@ -23,3 +26,9 @@ class Users(Base):
     email = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+
+
+
+# class Vote(Base):
+#     __tablename__ = "users"
+#     user_id = Column(INTEGER, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)

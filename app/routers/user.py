@@ -1,8 +1,10 @@
 from typing import Annotated
 from fastapi import HTTPException, status, Depends, APIRouter
 from sqlalchemy.orm import Session
-from sqlalchemy import select, update, delete
+from sqlalchemy import select
 from .. import schemas, models, database, utils
+
+# , get_current_user: int = Depends(oauth2.get_current_user)
 
 router = APIRouter(
     prefix="/user",
@@ -15,12 +17,15 @@ sessionDep = Annotated[Session, Depends(database.get_db)]
 #-----------------------------------------------------------------------------------------------------------------------
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponce)
 def createUser(user: schemas.UserRequest, db: sessionDep):
-    user.password = utils.createHash(user.password)
-    statement = models.Users(**user.model_dump())
-    db.add(statement)
-    db.commit()
-    db.refresh(statement)
-    return statement
+    try:
+        user.password = utils.createHash(user.password)
+        statement = models.Users(**user.model_dump())
+        db.add(statement)
+        db.commit()
+        db.refresh(statement)
+        return statement
+    except:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT)
 #-----------------------------------------------------------------------------------------------------------------------
 # Lists All The Users
 #-----------------------------------------------------------------------------------------------------------------------
