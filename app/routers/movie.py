@@ -32,7 +32,7 @@ def create(movies: list[schemas.Movie], db: sessionDep, get_current_user: int = 
 # Lists All The Movies
 #-----------------------------------------------------------------------------------------------------------------------
 @router.get("/", response_model=list[schemas.MovieWithLikes])
-def listAll(genre: str | None = None, search: str = "", watched: bool | None = None, limit: int | None = None, offset: int | None = None, sort: str | None = None, db: sessionDep = None, get_current_user: int = Depends(oauth2.get_current_user)):
+def listAll(genre: str | None = None, search: str = "", watched: bool | None = None, limit: int = 10, offset: int = 0, sort: str | None = None, db: sessionDep = None, get_current_user: int = Depends(oauth2.get_current_user)):
     statement = select(
         models.Movie,
           func.count(models.Vote.movie_id).label("likeCount")
@@ -50,11 +50,16 @@ def listAll(genre: str | None = None, search: str = "", watched: bool | None = N
     if watched is not None:
         statement = statement.where(models.Movie.watched == watched)
 
-    if limit is not None:
-        statement = statement.limit(limit)
 
-    if offset is not None:
-        statement = statement.limit(offset)
+    if limit < 0:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="limit should be greater than or equal to 0")
+    statement = statement.limit(limit)
+
+
+    if offset < 0:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="offset should be greater than or equal to 0")
+    statement = statement.offset(offset)
+
 
     if sort == "rating":
         statement = statement.order_by(models.Movie.rating)
