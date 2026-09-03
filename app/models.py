@@ -29,6 +29,8 @@ class Users(Base):
 
 
 
-# class Vote(Base):
-#     __tablename__ = "users"
-#     user_id = Column(INTEGER, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+class Vote(Base):
+    __tablename__ = "votes"
+
+    user_id = Column(INTEGER, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    movie_id = Column(INTEGER, ForeignKey("movies.id", ondelete="CASCADE"), primary_key=True)
