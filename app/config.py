@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings
-import os
 
 class Settings(BaseSettings):
     database_hostname: str 
@@ -15,3 +14,4 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 settings = Settings()
+

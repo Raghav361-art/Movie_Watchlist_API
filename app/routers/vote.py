@@ -15,9 +15,11 @@ router = APIRouter(
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def vote(vote: schemas.Vote, db: sessionDep, get_user: int = Depends(oauth2.get_current_user)):
+    
     movie = db.execute(select(models.Movie).where(models.Movie.id == vote.movie_id)).scalar_one_or_none()
     if movie is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    
     statement = select(models.Vote).where(models.Vote.movie_id == vote.movie_id, models.Vote.user_id == get_user.id)
     exist = db.execute(statement).scalar_one_or_none()
     
