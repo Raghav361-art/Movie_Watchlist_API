@@ -34,6 +34,10 @@ mako==1.4.1
     # via alembic
 markupsafe==3.0.3
     # via mako
+psycopg==3.3.5
+    # via movie-watchlist-api
+psycopg-binary==3.3.5 ; implementation_name != 'pypy'
+    # via psycopg
 pyasn1==0.6.4
     # via
     #   python-jose
@@ -71,6 +75,7 @@ typing-extensions==4.16.0
     #   alembic
     #   anyio
     #   fastapi
+    #   psycopg
     #   pydantic
     #   pydantic-core
     #   sqlalchemy
@@ -81,6 +86,8 @@ typing-inspection==0.4.4
     #   fastapi
     #   pydantic
     #   pydantic-settings
+tzdata==2026.3 ; sys_platform == 'win32'
+    # via psycopg
 uvicorn==0.52.4
     # via movie-watchlist-api
 uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
