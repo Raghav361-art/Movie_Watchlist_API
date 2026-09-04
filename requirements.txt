@@ -11,7 +11,9 @@ anyio==4.14.2
     #   starlette
     #   watchfiles
 bcrypt==4.0.1
-    # via movie-watchlist-api
+    # via
+    #   movie-watchlist-api
+    #   passlib
 cffi==2.1.1 ; platform_python_implementation != 'PyPy'
     # via cryptography
 click==8.5.0
@@ -42,6 +44,8 @@ mako==1.4.1
     # via alembic
 markupsafe==3.0.3
     # via mako
+passlib==1.7.4
+    # via movie-watchlist-api
 psycopg==3.3.5
     # via movie-watchlist-api
 psycopg-binary==3.3.5 ; implementation_name != 'pypy'
