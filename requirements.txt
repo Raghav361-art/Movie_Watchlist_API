@@ -41,11 +41,17 @@ pyasn1==0.6.4
 pycparser==3.0 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'
     # via cffi
 pydantic==2.13.5
-    # via fastapi
+    # via
+    #   fastapi
+    #   pydantic-settings
 pydantic-core==2.46.5
     # via pydantic
+pydantic-settings==2.15.0
+    # via movie-watchlist-api
 python-dotenv==1.2.3
-    # via uvicorn
+    # via
+    #   pydantic-settings
+    #   uvicorn
 python-jose==3.5.0
     # via movie-watchlist-api
 pyyaml==6.0.3
@@ -74,6 +80,7 @@ typing-inspection==0.4.4
     # via
     #   fastapi
     #   pydantic
+    #   pydantic-settings
 uvicorn==0.52.4
     # via movie-watchlist-api
 uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
