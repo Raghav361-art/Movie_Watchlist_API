@@ -31,20 +31,35 @@ def create(movies: list[schemas.Movie], db: sessionDep, get_current_user: int = 
 #-----------------------------------------------------------------------------------------------------------------------
 # Lists All The Movies
 #-----------------------------------------------------------------------------------------------------------------------
-@router.get("/", response_model=list[schemas.MovieResponse])
-def listAll(genre: str | None = None,search: str = "", watched: bool | None = None, limit: int | None = None, offset: int | None = None, sort: str | None = None, db: sessionDep = None, get_current_user: int = Depends(oauth2.get_current_user)):
-    statement = select(models.Movie).where(models.Movie.title.contains(search))
+@router.get("/", response_model=list[schemas.MovieWithLikes])
+def listAll(genre: str | None = None, search: str = "", watched: bool | None = None, limit: int = 10, offset: int = 0, sort: str | None = None, db: sessionDep = None, get_current_user: int = Depends(oauth2.get_current_user)):
+    statement = select(
+        models.Movie,
+          func.count(models.Vote.movie_id).label("likeCount")
+          ).where(
+              models.Movie.title.contains(search)
+              ).outerjoin(
+              models.Vote, models.Movie.id == models.Vote.movie_id
+              ).group_by(
+                  models.Movie.id
+                  )
+    
     if genre:
         statement = statement.where(models.Movie.genre == genre)
 
     if watched is not None:
         statement = statement.where(models.Movie.watched == watched)
 
-    if limit is not None:
-        statement = statement.limit(limit)
 
-    if offset is not None:
-        statement = statement.limit(offset)
+    if limit < 0:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="limit should be greater than or equal to 0")
+    statement = statement.limit(limit)
+
+
+    if offset < 0:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="offset should be greater than or equal to 0")
+    statement = statement.offset(offset)
+
 
     if sort == "rating":
         statement = statement.order_by(models.Movie.rating)
@@ -53,15 +68,24 @@ def listAll(genre: str | None = None,search: str = "", watched: bool | None = No
     elif sort == "title":
         statement = statement.order_by(models.Movie.title)
 
-    movies = db.execute(statement).scalars().all()
+    movies = db.execute(statement).all()
     return movies
 #-----------------------------------------------------------------------------------------------------------------------
 # Searching a Movie By ID
 #-----------------------------------------------------------------------------------------------------------------------
-@router.get("/{id}")
+@router.get("/{id}", response_model=schemas.MovieWithLikes)
 def search(id: int, db: sessionDep):
-    statement = select(models.Movie).where(models.Movie.id == id)
-    movie = db.execute(statement).scalar_one_or_none()
+    statement = select(
+            models.Movie,
+              func.count(models.Vote.movie_id).label("likeCount")
+              ).where(
+                  models.Movie.id == id
+                  ).outerjoin(
+                    models.Vote, models.Movie.id == models.Vote.movie_id
+                    ).group_by(
+                        models.Movie.id
+                        )
+    movie = db.execute(statement).first()
 
     if not movie:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"movie with id: {id} not found")

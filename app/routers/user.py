@@ -43,7 +43,7 @@ def search(id: int, db: sessionDep):
     statement = select(models.Users).where(models.Users.id == id)
     user = db.execute(statement).scalar_one_or_none()
 
-    if not user:
+    if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {id} not found")
 
     return user

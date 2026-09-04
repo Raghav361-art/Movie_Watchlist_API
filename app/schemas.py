@@ -3,6 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 from app.database import Base
+from app.routers import movie
 
 
 
@@ -32,18 +33,29 @@ class Movie(BaseModel):
     release_year: int
     watched: bool = False
     rating: int
+    
 
 
 
-class MovieResponse(Movie):
+class MovieResponse(BaseModel):
     id: int
+    title: str
+    director: str 
+    genre: str
+    release_year: int
+    watched: bool = False
     rating: int | None
-    user_id: int
     created_at: datetime
+    user_id: int
+    user: UserResponce
     
 
     class Config:
         from_attributes = True
+
+class MovieWithLikes(BaseModel):
+    Movie: MovieResponse
+    likeCount: int
 
 class Token(BaseModel):
     access_token: str
@@ -51,4 +63,8 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[int] = None
-    
+
+class Vote(BaseModel):
+    movie_id: int
+    dir: bool
+
