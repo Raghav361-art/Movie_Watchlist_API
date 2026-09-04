@@ -9,14 +9,16 @@ from .. import oauth2, schemas, models, database, utils
 router = APIRouter(tags=["Authentication"])
 sessionDep = Annotated[Session, Depends(database.get_db)]
 
-@router.get("/login", response_model=schemas.Token)
+DUMMY_PASSWORD_HASH = "$2b$12$8eo65iug2CfSGoL7dZRM0uBQX7AGR8JP04d2D1pzGy8w7mkU7.GzG"
+
+@router.post("/login", response_model=schemas.Token)
 def login(credentials: OAuth2PasswordRequestForm = Depends(), db: sessionDep = None):
     
     user = db.execute(select(models.Users).where(models.Users.email == credentials.username)).scalar_one_or_none()
     
     if not user:
         # This ensures the endpoint takes roughly the same amount of time to respond whether the username is valid or not
-        utils.verify(credentials.password, "$2b$12$NuQuW068BCnxgtHIfwX4N.kLC75dummySqRkHxrZTUdK3zZePgah/pG") # To prevent timing attacks that could be used to enumerate existing usernames
+        utils.verify(credentials.password, DUMMY_PASSWORD_HASH) # To prevent timing attacks that could be used to enumerate existing usernames
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Unauthorized Access! Wrong Credentials")
     
     if not utils.verify(credentials.password, user.password):
