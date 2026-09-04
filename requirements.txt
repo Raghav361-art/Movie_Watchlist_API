@@ -18,8 +18,14 @@ click==8.5.0
     # via uvicorn
 cryptography==50.0.1
     # via python-jose
+dnspython==2.8.0
+    # via email-validator
 ecdsa==0.19.2
     # via python-jose
+email-validator==2.3.0
+    # via
+    #   movie-watchlist-api
+    #   pydantic
 fastapi==0.141.1
     # via movie-watchlist-api
 greenlet==3.5.5 ; platform_machine == 'AMD64' or platform_machine == 'WIN32' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'ppc64le' or platform_machine == 'win32' or platform_machine == 'x86_64'
@@ -29,7 +35,9 @@ h11==0.16.0
 httptools==0.8.0
     # via uvicorn
 idna==3.19
-    # via anyio
+    # via
+    #   anyio
+    #   email-validator
 mako==1.4.1
     # via alembic
 markupsafe==3.0.3
@@ -47,6 +55,7 @@ pycparser==3.0 ; implementation_name != 'PyPy' and platform_python_implementatio
 pydantic==2.13.5
     # via
     #   fastapi
+    #   movie-watchlist-api
     #   pydantic-settings
 pydantic-core==2.46.5
     # via pydantic
