@@ -71,6 +71,8 @@ python-dotenv==1.2.3
     #   uvicorn
 python-jose==3.5.0
     # via movie-watchlist-api
+python-multipart==0.0.32
+    # via movie-watchlist-api
 pyyaml==6.0.3
     # via uvicorn
 rsa==4.9.1
