@@ -1,5 +1,3 @@
-from tkinter import NO
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from .. import schemas, models, database, oauth2
 from sqlalchemy.orm import Session, session
