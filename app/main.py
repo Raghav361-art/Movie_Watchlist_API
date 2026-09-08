@@ -18,10 +18,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://www.google.com/",
-        'https://roadmap.sh'
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,4 +32,4 @@ app.include_router(vote.router)
 
 @app.get("/")
 def root():
-    return {"message": "hello"}
+    return {"Message": "Hello, I'm Raghav", "Instructions": "Explore my API at www.raghav-art.me/docs"}
