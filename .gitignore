@@ -15,3 +15,4 @@ wheels/
 .DS_Store
 helpForMe.txt
 nginx
+docker-compose_dev.yml
