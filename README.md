@@ -1,30 +1,75 @@
 # 🎬 Movie Watchlist API
 
-A RESTful API built with **FastAPI** for managing a personal movie watchlist.
+A full-stack movie watchlist application built with **FastAPI**, **PostgreSQL**, and **SQLAlchemy**.
 
-Users can create accounts, authenticate using JWT tokens, manage their movies, filter and search movies, and like or unlike movies.
+The project provides a REST API for user authentication, movie management, filtering, pagination, and movie likes. It also includes a simple web interface for interacting with the watchlist.
 
 ---
 
-## 🚀 Features
+## ✨ Features
 
-- 🔐 User registration and authentication
-- 🔑 JWT-based authentication
-- 🔒 Password hashing using bcrypt
-- 🎬 Create multiple movies
-- 📋 Retrieve movies with pagination
-- 🔎 Search movies by title
-- 🎭 Filter movies by genre
-- 👀 Filter movies based on watched status
-- ⭐ Sort movies by rating, release year, or title
-- ✏️ Update movies
-- 🗑️ Delete movies
-- 👤 Movie ownership authorization
-- 👍 Like and unlike movies
-- ❤️ View movie like counts
-- 🗄️ PostgreSQL database
-- 🔄 Database migrations using Alembic
-- 📚 Interactive API documentation using Swagger UI
+### 🔐 Authentication
+
+- User registration
+- JWT-based authentication
+- Secure password hashing with bcrypt
+- Protected endpoints
+- User ownership and authorization
+- Token expiration
+
+### 🎬 Movie Management
+
+- Create multiple movies in a single request
+- Retrieve movies
+- Retrieve a movie by ID
+- Update movies
+- Delete movies
+- Movies belong to their creating user
+
+### 🔎 Search & Filtering
+
+- Search movies by title
+- Filter by genre
+- Filter by watched status
+- Pagination with `limit` and `offset`
+- Sort by:
+  - Rating
+  - Release year
+  - Title
+
+### 👍 Likes
+
+- Like movies
+- Unlike movies
+- Prevent duplicate likes
+- Display the number of likes for each movie
+
+### 🗄️ Database
+
+- PostgreSQL
+- SQLAlchemy ORM
+- Async database operations
+- Alembic database migrations
+- Foreign-key relationships
+- Cascading deletes
+
+### 🎨 Web Interface
+
+- Server-rendered HTML templates
+- Static CSS and JavaScript
+- Movie dashboard
+- Authentication interface
+- Light/Dark theme toggle
+- Responsive design
+
+### 📚 API Documentation
+
+FastAPI automatically provides interactive API documentation through Swagger UI.
+
+Once the application is running:
+
+- `/docs` — Swagger UI
+- `/redoc` — ReDoc
 
 ---
 
@@ -32,26 +77,64 @@ Users can create accounts, authenticate using JWT tokens, manage their movies, f
 
 | Technology | Purpose |
 |---|---|
-| Python | Programming Language |
-| FastAPI | Backend Framework |
-| PostgreSQL | Database |
+| Python 3.11+ | Programming language |
+| FastAPI | Web framework |
 | SQLAlchemy | ORM |
-| Alembic | Database Migrations |
-| Pydantic | Data Validation |
+| PostgreSQL | Database |
+| asyncpg | Async PostgreSQL driver |
+| Alembic | Database migrations |
+| Pydantic | Data validation |
+| Pydantic Settings | Environment configuration |
 | JWT | Authentication |
-| Passlib + bcrypt | Password Hashing |
-| Uvicorn | ASGI Server |
-| UV | Python Package Management |
+| Passlib + bcrypt | Password hashing |
+| Uvicorn | ASGI server |
+| Gunicorn | Production process manager |
+| Docker | Containerization |
+| Jinja2 | HTML templating |
+| HTML / CSS / JavaScript | Frontend |
 
 ---
 
-## 📂 Project Structure
+## 🏗️ Architecture
 
 ```text
+                    ┌──────────────────┐
+                    │     Browser      │
+                    │ HTML/CSS/JS      │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │     FastAPI      │
+                    │     Routers      │
+                    └────────┬─────────┘
+                             │
+                 ┌───────────┴───────────┐
+                 │                       │
+                 ▼                       ▼
+        ┌────────────────┐      ┌────────────────┐
+        │ Authentication │      │   SQLAlchemy   │
+        │      JWT       │      │  AsyncSession  │
+        └────────────────┘      └───────┬────────┘
+                                        │
+                                        ▼
+                                 ┌──────────────┐
+                                 │   asyncpg    │
+                                 └──────┬───────┘
+                                        │
+                                        ▼
+                                 ┌──────────────┐
+                                 │  PostgreSQL  │
+                                 └──────────────┘
+
+
+📂 Project Structure
+
 Movie_Watchlist_API/
 │
 ├── alembic/
-│   └── versions/
+│   ├── versions/
+│   └── env.py
 │
 ├── app/
 │   ├── routers/
@@ -59,6 +142,15 @@ Movie_Watchlist_API/
 │   │   ├── movie.py
 │   │   ├── user.py
 │   │   └── vote.py
+│   │
+│   ├── static/
+│   │   ├── css/
+│   │   └── js/
+│   │
+│   ├── templates/
+│   │   ├── layouts.html
+│   │   ├── home.html
+│   │   └── dashboard.html
 │   │
 │   ├── config.py
 │   ├── database.py
@@ -69,6 +161,9 @@ Movie_Watchlist_API/
 │   └── utils.py
 │
 ├── alembic.ini
+├── Dockerfile
+├── docker-compose.yml
+├── entrypoint.sh
 ├── pyproject.toml
 ├── requirements.txt
 ├── uv.lock
