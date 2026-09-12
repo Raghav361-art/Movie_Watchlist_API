@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in — Watchlist{% endblock %}
+
+{% block body %}
+<div class="auth-shell">
+  <section class="auth-pitch">
+    <div class="brand"><span class="brand-mark">●</span> Watchlist</div>
+
+    <div>
+      <h1 class="auth-headline">Your reel,<br /><span class="accent">your rules.</span></h1>
+      <p class="auth-sub">
+        Keep a running record of what you've watched, what's queued next, and what earned a
+        rewatch. Search, rate, and like — one ticket per film.
+      </p>
+
+      <div class="reel-facts">
+        <div class="reel-fact">
+          <div class="num">A–Z</div>
+          <div class="label">sort by title, year or rating</div>
+        </div>
+        <div class="reel-fact">
+          <div class="num">JWT</div>
+          <div class="label">your list, secured</div>
+        </div>
+        <div class="reel-fact">
+          <div class="num">♥</div>
+          <div class="label">like your favorites</div>
+        </div>
+      </div>
+    </div>
+
+    <div></div>
+  </section>
+
+  <section class="auth-panel">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <div class="auth-tab active" data-target="login-form">Sign in</div>
+        <div class="auth-tab" data-target="register-form">Create account</div>
+      </div>
+
+      <form id="login-form" class="auth-form active" novalidate>
+        <div id="login-error" class="form-error"></div>
+        <div class="field">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" required autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">
+          Sign in
+        </button>
+      </form>
+
+      <form id="register-form" class="auth-form" novalidate>
+        <div id="register-error" class="form-error"></div>
+        <div class="field">
+          <label for="register-email">Email</label>
+          <input type="email" id="register-email" required autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="register-password">Password</label>
+          <input type="password" id="register-password" required autocomplete="new-password" />
+        </div>
+        <div class="field">
+          <label for="register-confirm">Confirm password</label>
+          <input type="password" id="register-confirm" required autocomplete="new-password" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">
+          Create account
+        </button>
+      </form>
+
+      <p class="auth-hint">Your watchlist stays private to your account.</p>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/auth.js') }}"></script>
+{% endblock %}
