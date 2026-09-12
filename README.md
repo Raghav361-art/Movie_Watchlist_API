@@ -126,7 +126,7 @@ Once the application is running:
                                  ┌──────────────┐
                                  │  PostgreSQL  │
                                  └──────────────┘
-
+```
 
 ## 📂 Project Structure
 
