@@ -1,21 +1,21 @@
 from typing import Annotated
 from fastapi import HTTPException, status, Depends, APIRouter
-from sqlalchemy.orm import Session
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, func
 from .. import schemas, models, database,oauth2
-from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 router = APIRouter(
     prefix="/movies",
     tags=["Movies"]
 )
-sessionDep = Annotated[Session, Depends(database.get_db)]
+sessionDep = Annotated[AsyncSession, Depends(database.get_db)]
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Creates Movies List
 #-----------------------------------------------------------------------------------------------------------------------
 @router.post("/")
-def create(movies: list[schemas.Movie], db: sessionDep, get_current_user: int = Depends(oauth2.get_current_user)):
+async def create(movies: list[schemas.Movie], db: sessionDep, get_current_user: int = Depends(oauth2.get_current_user)):
 
     list_movies = []
 
@@ -24,15 +24,15 @@ def create(movies: list[schemas.Movie], db: sessionDep, get_current_user: int = 
         db.add(obj)
         list_movies.append(obj)
 
-    db.commit()
-    for mov in list_movies: db.refresh(mov)
+    await db.commit()
+    for mov in list_movies: await db.refresh(mov)
 
     return list_movies
 #-----------------------------------------------------------------------------------------------------------------------
 # Lists All The Movies
 #-----------------------------------------------------------------------------------------------------------------------
 @router.get("/", response_model=list[schemas.MovieWithLikes])
-def listAll(genre: str | None = None, search: str = "", watched: bool | None = None, limit: int = 10, offset: int = 0, sort: str | None = None, db: sessionDep = None, get_current_user: int = Depends(oauth2.get_current_user)):
+async def listAll(genre: str | None = None, search: str = "", watched: bool | None = None, limit: int = 10, offset: int = 0, sort: str | None = None, db: sessionDep = None, get_current_user: int = Depends(oauth2.get_current_user)):
     statement = select(
         models.Movie,
           func.count(models.Vote.movie_id).label("likeCount")
@@ -40,7 +40,9 @@ def listAll(genre: str | None = None, search: str = "", watched: bool | None = N
               models.Movie.title.contains(search)
               ).outerjoin(
               models.Vote, models.Movie.id == models.Vote.movie_id
-              ).group_by(
+              ).options(
+                    selectinload(models.Movie.user)
+                ).group_by(
                   models.Movie.id
                   )
     
@@ -68,13 +70,14 @@ def listAll(genre: str | None = None, search: str = "", watched: bool | None = N
     elif sort == "title":
         statement = statement.order_by(models.Movie.title)
 
-    movies = db.execute(statement).all()
+    movies_data = await db.execute(statement)
+    movies = movies_data.all()
     return movies
 #-----------------------------------------------------------------------------------------------------------------------
 # Searching a Movie By ID
 #-----------------------------------------------------------------------------------------------------------------------
 @router.get("/{id}", response_model=schemas.MovieWithLikes)
-def search(id: int, db: sessionDep):
+async def search(id: int, db: sessionDep):
     statement = select(
             models.Movie,
               func.count(models.Vote.movie_id).label("likeCount")
@@ -82,10 +85,13 @@ def search(id: int, db: sessionDep):
                   models.Movie.id == id
                   ).outerjoin(
                     models.Vote, models.Movie.id == models.Vote.movie_id
+                    ).options(
+                        selectinload(models.Movie.user)
                     ).group_by(
                         models.Movie.id
                         )
-    movie = db.execute(statement).first()
+    movie_data = await db.execute(statement)
+    movie = movie_data.first()
 
     if not movie:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"movie with id: {id} not found")
@@ -94,9 +100,10 @@ def search(id: int, db: sessionDep):
 # Updates Movies By ID
 #-----------------------------------------------------------------------------------------------------------------------
 @router.put("/{id}")
-def updateVal(id: int, movies: schemas.Movie, db: sessionDep, get_current_user: int = Depends(oauth2.get_current_user)):
+async def updateVal(id: int, movies: schemas.Movie, db: sessionDep, get_current_user: int = Depends(oauth2.get_current_user)):
 
-    movie = db.execute(select(models.Movie).where(models.Movie.id == id)).scalar_one_or_none()
+    movie_data = await db.execute(select(models.Movie).where(models.Movie.id == id))
+    movie = movie_data.scalar_one_or_none()
 
     if movie is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"movie with id: {id} not found")
@@ -105,17 +112,18 @@ def updateVal(id: int, movies: schemas.Movie, db: sessionDep, get_current_user: 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     
     statement = update(models.Movie).where(models.Movie.id == id).values(**movies.model_dump())
-    db.execute(statement)
-    db.commit()
+    await db.execute(statement)
+    await db.commit()
     return {"success!": "values updated"}
 #-----------------------------------------------------------------------------------------------------------------------
 # Deletes Movies By ID
 #-----------------------------------------------------------------------------------------------------------------------
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def deleteVal(id: int, db: sessionDep, get_current_user: int = Depends(oauth2.get_current_user)):
+async def deleteVal(id: int, db: sessionDep, get_current_user: int = Depends(oauth2.get_current_user)):
 
 
-    movie = db.execute(select(models.Movie).where(models.Movie.id == id)).scalar_one_or_none()
+    movie_data = await db.execute(select(models.Movie).where(models.Movie.id == id))
+    movie = movie_data.scalar_one_or_none()
 
     if movie is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"movie with id: {id} not found")
@@ -125,8 +133,8 @@ def deleteVal(id: int, db: sessionDep, get_current_user: int = Depends(oauth2.ge
 
     
     statement = delete(models.Movie).where(models.Movie.id == id)
-    db.execute(statement)
-    db.commit()
+    await db.execute(statement)
+    await db.commit()
 
     return
 
@@ -150,3 +158,4 @@ def deleteVal(id: int, db: sessionDep, get_current_user: int = Depends(oauth2.ge
 #         db.commit()
 
 #     return like
+

@@ -1,20 +1,21 @@
 from typing import Annotated
 from fastapi import HTTPException, status, Depends, APIRouter
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 from sqlalchemy import select
 from .. import oauth2, schemas, models, database, utils
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 router = APIRouter(tags=["Authentication"])
-sessionDep = Annotated[Session, Depends(database.get_db)]
+sessionDep = Annotated[AsyncSession, Depends(database.get_db)]
 
 DUMMY_PASSWORD_HASH = "$2b$12$8eo65iug2CfSGoL7dZRM0uBQX7AGR8JP04d2D1pzGy8w7mkU7.GzG"
 
 @router.post("/login", response_model=schemas.Token)
-def login(credentials: OAuth2PasswordRequestForm = Depends(), db: sessionDep = None):
+async def login(credentials: OAuth2PasswordRequestForm = Depends(), db: sessionDep = None):
     
-    user = db.execute(select(models.Users).where(models.Users.email == credentials.username)).scalar_one_or_none()
+    user_data = await db.execute(select(models.Users).where(models.Users.email == credentials.username))
+    user = user_data.scalar_one_or_none()
     
     if not user:
         # This ensures the endpoint takes roughly the same amount of time to respond whether the username is valid or not

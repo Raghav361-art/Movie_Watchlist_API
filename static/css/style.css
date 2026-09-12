@@ -20,13 +20,94 @@
   --rust-bright: #cf5a3d;
 
   --radius: 3px;
-  --shadow-deep: 0 24px 48px -24px rgba(0, 0, 0, 0.6);
+  --shadow-color: rgba(0, 0, 0, 0.6);
+  --shadow-deep: 0 24px 48px -24px var(--shadow-color);
+  --auth-glow: rgba(214, 165, 76, 0.08);
+  --overlay: rgba(8, 9, 11, 0.72);
   --sprocket-size: 10px;
+
+  color-scheme: dark;
+}
+
+/* ==========================================================================
+   Light palette — same "box office" system, daylight matinee variant.
+   Applies when explicitly chosen (data-theme="light"), or automatically
+   when the OS is in light mode and the user hasn't overridden the theme
+   (no data-theme attribute, or data-theme="auto").
+   ========================================================================== */
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]),
+  html[data-theme="auto"] {
+    --bg: #f7f3ea;
+    --bg-raised: #efe7d5;
+    --surface: #fffdf9;
+    --surface-2: #f1ead9;
+    --stroke: #ddd0b3;
+    --text: #221d15;
+    --text-muted: #5c5142;
+    --text-dim: #8b8070;
+    --gold: #a97423;
+    --gold-bright: #8f6019;
+    --teal: #2f6b68;
+    --rust: #9c3a22;
+    --rust-bright: #82301c;
+
+    --shadow-color: rgba(40, 32, 16, 0.14);
+    --auth-glow: rgba(169, 116, 35, 0.1);
+    --overlay: rgba(50, 42, 26, 0.4);
+
+    color-scheme: light;
+  }
+}
+
+html[data-theme="light"] {
+  --bg: #f7f3ea;
+  --bg-raised: #efe7d5;
+  --surface: #fffdf9;
+  --surface-2: #f1ead9;
+  --stroke: #ddd0b3;
+  --text: #221d15;
+  --text-muted: #5c5142;
+  --text-dim: #8b8070;
+  --gold: #a97423;
+  --gold-bright: #8f6019;
+  --teal: #2f6b68;
+  --rust: #9c3a22;
+  --rust-bright: #82301c;
+
+  --shadow-color: rgba(40, 32, 16, 0.14);
+  --auth-glow: rgba(169, 116, 35, 0.1);
+  --overlay: rgba(50, 42, 26, 0.4);
+
+  color-scheme: light;
+}
+
+/* Explicit dark stays identical to :root, declared here only so it always
+   wins over the OS-light media query above if the user has forced dark
+   while their system is in light mode. */
+html[data-theme="dark"] {
+  --bg: #0e1013;
+  --bg-raised: #15181d;
+  --surface: #1c2027;
+  --surface-2: #242932;
+  --stroke: #2d323c;
+  --text: #f3efe6;
+  --text-muted: #a39c92;
+  --text-dim: #6c6a68;
+  --gold: #d6a54c;
+  --gold-bright: #e8bd6c;
+  --teal: #5c9a97;
+  --rust: #b6462c;
+  --rust-bright: #cf5a3d;
+
+  --shadow-color: rgba(0, 0, 0, 0.6);
+  --auth-glow: rgba(214, 165, 76, 0.08);
+  --overlay: rgba(8, 9, 11, 0.72);
+
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
-
-html { color-scheme: dark; }
 
 body {
   margin: 0;
@@ -99,7 +180,7 @@ button, input, select {
   font-weight: 600;
 }
 
-.brand-mark { color: var(--gold); }
+.brand-mark { color: var(--gold-bright); }
 
 .topbar-actions { display: flex; align-items: center; gap: 14px; }
 
@@ -218,7 +299,7 @@ button, input, select {
   justify-content: space-between;
   border-right: 1px solid var(--stroke);
   background:
-    radial-gradient(60% 50% at 20% 10%, rgba(214, 165, 76, 0.08), transparent 60%),
+    radial-gradient(60% 50% at 20% 10%, var(--auth-glow), transparent 60%),
     var(--bg-raised);
 }
 
@@ -511,7 +592,7 @@ button, input, select {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(8, 9, 11, 0.72);
+  background: var(--overlay);
   display: none;
   align-items: center;
   justify-content: center;
@@ -564,6 +645,35 @@ button, input, select {
 }
 
 .toast.error { border-color: rgba(182, 70, 44, 0.5); color: var(--rust-bright); }
+
+/* ------------------------------ Theme toggle -------------------------------- */
+.theme-toggle {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  color: var(--text-muted);
+  border-radius: 100px;
+  padding: 7px 14px 7px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.theme-toggle:hover { border-color: var(--gold); color: var(--text); }
+.theme-toggle span:first-child { font-size: 0.95rem; line-height: 1; }
+
+@media (max-width: 760px) {
+  .theme-toggle {
+    bottom: 16px;
+    left: 16px;
+  }
+}
 
 /* --------------------------------- Utility ----------------------------------- */
 .hidden { display: none !important; }

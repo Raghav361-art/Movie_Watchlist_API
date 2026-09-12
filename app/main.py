@@ -3,13 +3,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from . import models, config
 from .database import engine, get_db
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
-
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import movie, user, auth, vote
 
-sessionDep = Annotated[Session, Depends(get_db)]
+sessionDep = Annotated[AsyncSession, Depends(get_db)]
 
 app = FastAPI()
 

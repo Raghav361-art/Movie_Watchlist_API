@@ -39,12 +39,14 @@ def verify_access_token(token: str, credential_exception):
 
     return token_data
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
+async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
     credential_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="UNAUTHORIZED", headers={"WWW-Authenticate": "Bearer"})
 
     token = verify_access_token(token, credential_exception)
 
-    user = db.execute(select(models.Users).where(models.Users.id == token.id)).scalar_one_or_none()
+    user_data = await db.execute(select(models.Users).where(models.Users.id == token.id))
+
+    user = user_data.scalar_one_or_none()
     
     return user
 
