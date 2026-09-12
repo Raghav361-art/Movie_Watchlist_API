@@ -128,8 +128,9 @@ Once the application is running:
                                  └──────────────┘
 
 
-📂 Project Structure
+## 📂 Project Structure
 
+```text
 Movie_Watchlist_API/
 │
 ├── alembic/
