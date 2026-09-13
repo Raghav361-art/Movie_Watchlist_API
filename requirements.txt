@@ -10,6 +10,10 @@ anyio==4.14.2
     # via
     #   starlette
     #   watchfiles
+async-timeout==5.0.1 ; python_full_version < '3.11.3'
+    # via redis
+asyncpg==0.31.0
+    # via movie-watchlist-api
 bcrypt==4.0.1
     # via
     #   movie-watchlist-api
@@ -30,12 +34,16 @@ email-validator==2.3.0
     #   pydantic
 fastapi==0.141.1
     # via movie-watchlist-api
-greenlet==3.5.5 ; platform_machine == 'AMD64' or platform_machine == 'WIN32' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'ppc64le' or platform_machine == 'win32' or platform_machine == 'x86_64'
-    # via sqlalchemy
+greenlet==3.5.5
+    # via
+    #   movie-watchlist-api
+    #   sqlalchemy
 gunicorn==26.2.0
     # via movie-watchlist-api
 h11==0.16.0
     # via uvicorn
+hiredis==3.4.1
+    # via redis
 httptools==0.8.0
     # via uvicorn
 idna==3.19
@@ -77,6 +85,8 @@ python-multipart==0.0.32
     # via movie-watchlist-api
 pyyaml==6.0.3
     # via uvicorn
+redis==8.1.0
+    # via movie-watchlist-api
 rsa==4.9.1
     # via python-jose
 six==1.17.0
@@ -113,3 +123,67 @@ watchfiles==1.2.0
     # via uvicorn
 websockets==17.1
     # via uvicorn
+agent-detector==1.1.0
+alembic==1.19.2
+annotated-doc==0.0.5
+annotated-types==0.8.0
+anyio==4.14.2
+asyncpg==0.31.0
+bcrypt==4.0.1
+certifi==2026.7.22
+cffi==2.1.1
+click==8.5.0
+cryptography==50.0.1
+detect-installer==0.1.0
+dnspython==2.8.0
+ecdsa==0.19.2
+email-validator==2.3.0
+fastapi==0.141.1
+fastapi-cli==0.0.32
+fastapi-cloud-cli==0.24.0
+fastar==0.12.0
+greenlet==3.5.5
+gunicorn==26.2.0
+h11==0.16.0
+hiredis==3.4.1
+httpcore==1.0.9
+httptools==0.8.0
+httpx==0.28.1
+idna==3.19
+jinja2==3.1.6
+mako==1.4.1
+markdown-it-py==4.2.0
+markupsafe==3.0.3
+mdurl==0.1.2
+passlib==1.7.4
+psycopg==3.3.5
+psycopg-binary==3.3.5
+pyasn1==0.6.4
+pycparser==3.0
+pydantic==2.13.5
+pydantic-core==2.46.5
+pydantic-extra-types==2.11.1
+pydantic-settings==2.15.0
+pygments==2.21.0
+python-dotenv==1.2.3
+python-jose==3.5.0
+python-multipart==0.0.32
+pyyaml==6.0.3
+redis==8.1.0
+rich==15.0.0
+rich-toolkit==0.20.3
+rignore==0.8.1
+rsa==4.9.1
+sentry-sdk==2.68.1
+shellingham==1.5.4
+six==1.17.0
+sqlalchemy==2.0.52
+starlette==1.6.0
+typer==0.27.2
+typing-extensions==4.16.0
+typing-inspection==0.4.4
+urllib3==2.7.0
+uvicorn==0.52.4
+uvloop==0.22.1
+watchfiles==1.2.0
+websockets==17.1
