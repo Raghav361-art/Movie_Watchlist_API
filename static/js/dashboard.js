@@ -1,3 +1,4 @@
+console.log("NEW DASHBOARD JS LOADED");
 requireAuth();
 
 const state = {
