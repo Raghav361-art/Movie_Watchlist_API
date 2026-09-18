@@ -1,9 +1,12 @@
 from typing import Annotated
 from fastapi import HTTPException, status, Depends, APIRouter
 from sqlalchemy import select, update, delete, func
-from .. import schemas, models, database,oauth2
+from .. import schemas, models, database, oauth2, config
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+import redis.asyncio as aioredis
+
+redis_client = aioredis.Redis(host=config.settings.redis_hostname, port=config.settings.redis_port, decode_responses=True)
 
 router = APIRouter(
     prefix="/movies",
@@ -33,9 +36,13 @@ async def create(movies: list[schemas.Movie], db: sessionDep, get_current_user: 
 #-----------------------------------------------------------------------------------------------------------------------
 @router.get("/", response_model=list[schemas.MovieWithLikes])
 async def listAll(genre: str | None = None, search: str = "", watched: bool | None = None, limit: int = 10, offset: int = 0, sort: str | None = None, db: sessionDep = None, get_current_user: int = Depends(oauth2.get_current_user)):
+
+    user_liked = (select(models.Vote.movie_id).where(models.Vote.movie_id == models.Movie.id,models.Vote.user_id == get_current_user.id).correlate(models.Movie).exists())
+    
     statement = select(
         models.Movie,
-          func.count(models.Vote.movie_id).label("likeCount")
+          func.count(models.Vote.movie_id).label("likeCount"),
+          user_liked.label("liked")
           ).where(
               models.Movie.title.contains(search)
               ).outerjoin(

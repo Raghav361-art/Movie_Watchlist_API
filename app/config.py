@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     database_hostname: str 
@@ -9,9 +9,10 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str
     access_token_expire_minutes: int
+    redis_hostname: str
+    redis_port: int
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
 
 settings = Settings()
 

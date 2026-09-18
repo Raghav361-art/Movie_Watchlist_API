@@ -2,10 +2,6 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 
-from app.database import Base
-from app.routers import movie
-
-
 
 
 
@@ -19,7 +15,7 @@ class UserResponce(BaseModel):
     email: EmailStr
     created_at: datetime
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 class UserLogin(BaseModel):
@@ -50,12 +46,13 @@ class MovieResponse(BaseModel):
     user: UserResponce
     
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 class MovieWithLikes(BaseModel):
     Movie: MovieResponse
     likeCount: int
+    liked: bool
 
 class Token(BaseModel):
     access_token: str
