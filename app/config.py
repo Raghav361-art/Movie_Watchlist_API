@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int
     redis_hostname: str
     redis_port: int
+    cors_origins: str = ""
 
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
 

@@ -20,7 +20,7 @@ redis_client = aioredis.Redis(host=config.settings.redis_hostname, port=config.s
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[origin.strip() for origin in config.settings.cors_origins.split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,14 +40,20 @@ app.include_router(vote.router)
 async def home(request: Request):
     cache_key = "view:home"
 
-    cache_html = await redis_client.get(cache_key)
+    try:
+        cache_html = await redis_client.get(cache_key)
+    except Exception:
+        cache_html = None
     if cache_html:
         return HTMLResponse(content=cache_html)
 
     response = templates.TemplateResponse(request, "index.html")
     cache = response.body.decode("utf-8")
 
-    await redis_client.setex(cache_key, 1800, cache)
+    try:
+        await redis_client.setex(cache_key, 1800, cache)
+    except Exception:
+        pass
     
     return response
 
@@ -55,14 +61,20 @@ async def home(request: Request):
 async def dashboard(request: Request):
     cache_key = f"view:dashboard"
 
-    cache_html = await redis_client.get(cache_key)
+    try:
+        cache_html = await redis_client.get(cache_key)
+    except Exception:
+        cache_html = None
     if cache_html:
         return HTMLResponse(cache_html)
 
     response = templates.TemplateResponse(request, "dashboard.html")
     cache = response.body.decode("utf-8")
 
-    await redis_client.set(cache_key, cache, 30)
+    try:
+        await redis_client.set(cache_key, cache, 30)
+    except Exception:
+        pass
     return response
 
 @app.get("/api")

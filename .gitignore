@@ -16,3 +16,4 @@ wheels/
 helpForMe.txt
 nginx
 docker-compose_dev.yml
+tests/

@@ -15,6 +15,9 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ALGORITHM=${ALGORITHM}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - REDIS_HOSTNAME=redis
+      - REDIS_PORT=6379
+      - CORS_ORIGINS=${CORS_ORIGINS}
 
   postgres:
     image: postgres
@@ -27,6 +30,12 @@ services:
     volumes:
       - postgres-db:/var/lib/postgresql/18/docker
 
+  redis:
+    image: redis
+    volumes:
+      - redis_db:/data
+
 volumes:
   postgres-db:
+  redis_db:
     

@@ -1,13 +1,13 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 
 
 class UserRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8, max_length=128)
 
 
 class UserResponce(BaseModel):
@@ -15,8 +15,7 @@ class UserResponce(BaseModel):
     email: EmailStr
     created_at: datetime
 
-    class ConfigDict:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -26,9 +25,9 @@ class Movie(BaseModel):
     title: str
     director: str 
     genre: str
-    release_year: int
+    release_year: int = Field(ge=1888, le=2100)
     watched: bool = False
-    rating: int
+    rating: int | None = Field(default=None, ge=0, le=10)
     
 
 
@@ -46,8 +45,7 @@ class MovieResponse(BaseModel):
     user: UserResponce
     
 
-    class ConfigDict:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class MovieWithLikes(BaseModel):
     Movie: MovieResponse

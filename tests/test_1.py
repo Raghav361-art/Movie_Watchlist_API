@@ -1,15 +1,10 @@
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from fastapi.websockets import WebSocket
-from app.main import app
+import pytest
 
-app = app
-
-
-def test_read_main():
-    client = TestClient(app)
-    response = client.get("/")
+@pytest.mark.anyio
+async def test_read_main(client):
+    response = await client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"msg": "Hello World"}
+    assert response.headers["content-type"].startswith("text/html")
+    assert "Sign in" in response.text
 
 
