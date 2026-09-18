@@ -7,7 +7,6 @@ const state = {
   sort: "",
   limit: 9,
   offset: 0,
-  likedIds: new Set(JSON.parse(localStorage.getItem("watchlist_liked") || "[]")),
   editingId: null,
 };
 
@@ -20,10 +19,6 @@ function currentUserId() {
   } catch (e) {
     return null;
   }
-}
-
-function persistLiked() {
-  localStorage.setItem("watchlist_liked", JSON.stringify([...state.likedIds]));
 }
 
 // ---------------------------------------------------------------- elements
@@ -54,7 +49,7 @@ function starRow(rating) {
 function ticketTemplate(entry) {
   const movie = entry.Movie;
   const likeCount = entry.likeCount;
-  const liked = state.likedIds.has(movie.id);
+  const liked = entry.liked;
   const isOwner = movie.user_id === currentUserId();
 
   const el = document.createElement("article");
@@ -264,23 +259,11 @@ reel.addEventListener("click", async (e) => {
   const action = btn.dataset.action;
 
   if (action === "like") {
-    const alreadyLiked = state.likedIds.has(id);
+    const alreadyLiked = btn.classList.contains("liked");
     try {
       await API.vote(id, !alreadyLiked);
-      if (alreadyLiked) {
-        state.likedIds.delete(id);
-      } else {
-        state.likedIds.add(id);
-      }
-      persistLiked();
       loadMovies();
     } catch (err) {
-      // Reconcile local state if the server disagrees about like status.
-      if (err.status === 409) {
-        if (alreadyLiked) state.likedIds.delete(id);
-        else state.likedIds.add(id);
-        persistLiked();
-      }
       showToast(err.message || "Couldn't update your vote.", true);
     }
   }

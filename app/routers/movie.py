@@ -1,9 +1,12 @@
 from typing import Annotated
 from fastapi import HTTPException, status, Depends, APIRouter
 from sqlalchemy import select, update, delete, func
-from .. import schemas, models, database,oauth2
+from .. import schemas, models, database, oauth2, config
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+import redis.asyncio as aioredis
+
+redis_client = aioredis.Redis(host=config.settings.redis_hostname, port=config.settings.redis_port, decode_responses=True)
 
 router = APIRouter(
     prefix="/movies",
@@ -33,10 +36,15 @@ async def create(movies: list[schemas.Movie], db: sessionDep, get_current_user: 
 #-----------------------------------------------------------------------------------------------------------------------
 @router.get("/", response_model=list[schemas.MovieWithLikes])
 async def listAll(genre: str | None = None, search: str = "", watched: bool | None = None, limit: int = 10, offset: int = 0, sort: str | None = None, db: sessionDep = None, get_current_user: int = Depends(oauth2.get_current_user)):
+
+    user_liked = (select(models.Vote.movie_id).where(models.Vote.movie_id == models.Movie.id,models.Vote.user_id == get_current_user.id).correlate(models.Movie).exists())
+    
     statement = select(
         models.Movie,
-          func.count(models.Vote.movie_id).label("likeCount")
+          func.count(models.Vote.movie_id).label("likeCount"),
+          user_liked.label("liked")
           ).where(
+              models.Movie.user_id == get_current_user.id,
               models.Movie.title.contains(search)
               ).outerjoin(
               models.Vote, models.Movie.id == models.Vote.movie_id
@@ -53,22 +61,24 @@ async def listAll(genre: str | None = None, search: str = "", watched: bool | No
         statement = statement.where(models.Movie.watched == watched)
 
 
-    if limit < 0:
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="limit should be greater than or equal to 0")
+    if limit < 0 or limit > 100:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="limit must be between 0 and 100")
     statement = statement.limit(limit)
 
 
     if offset < 0:
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="offset should be greater than or equal to 0")
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="offset should be greater than or equal to 0")
     statement = statement.offset(offset)
 
 
     if sort == "rating":
-        statement = statement.order_by(models.Movie.rating)
+        statement = statement.order_by(models.Movie.rating.desc().nullslast(), models.Movie.id)
     elif sort == "year":
-        statement = statement.order_by(models.Movie.release_year)
+        statement = statement.order_by(models.Movie.release_year.desc(), models.Movie.id)
     elif sort == "title":
-        statement = statement.order_by(models.Movie.title)
+        statement = statement.order_by(models.Movie.title, models.Movie.id)
+    else:
+        statement = statement.order_by(models.Movie.created_at.desc(), models.Movie.id.desc())
 
     movies_data = await db.execute(statement)
     movies = movies_data.all()
@@ -77,12 +87,16 @@ async def listAll(genre: str | None = None, search: str = "", watched: bool | No
 # Searching a Movie By ID
 #-----------------------------------------------------------------------------------------------------------------------
 @router.get("/{id}", response_model=schemas.MovieWithLikes)
-async def search(id: int, db: sessionDep):
+async def search(id: int, db: sessionDep, get_current_user: int = Depends(oauth2.get_current_user)):
+    user_liked = (select(models.Vote.movie_id).where(models.Vote.movie_id == models.Movie.id, models.Vote.user_id == get_current_user.id).correlate(models.Movie).exists())
+
     statement = select(
             models.Movie,
-              func.count(models.Vote.movie_id).label("likeCount")
+              func.count(models.Vote.movie_id).label("likeCount"),
+              user_liked.label("liked")
               ).where(
-                  models.Movie.id == id
+                  models.Movie.id == id,
+                  models.Movie.user_id == get_current_user.id
                   ).outerjoin(
                     models.Vote, models.Movie.id == models.Vote.movie_id
                     ).options(
@@ -110,7 +124,7 @@ async def updateVal(id: int, movies: schemas.Movie, db: sessionDep, get_current_
 
     if movie.user_id != get_current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    
+
     statement = update(models.Movie).where(models.Movie.id == id).values(**movies.model_dump())
     await db.execute(statement)
     await db.commit()

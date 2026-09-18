@@ -14,7 +14,7 @@ class Movie(Base):
     release_year = Column(INTEGER, nullable=False)
     watched = Column(BOOLEAN, nullable=False, server_default="false")
     rating = Column(INTEGER)
-    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('CURRENT_TIMESTAMP'))
     user_id = Column(INTEGER, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     user = relationship("Users")
@@ -25,7 +25,7 @@ class Users(Base):
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     email = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
-    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('CURRENT_TIMESTAMP'))
 
 
 
