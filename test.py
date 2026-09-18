@@ -1,4 +1,5 @@
 import requests
+from app.config import settings
 
 class QueryMovie:
     GENRES = {
@@ -33,7 +34,7 @@ class QueryMovie:
 
         headers = {
             "accept": "application/json",
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNjdlN2NkM2I0ZmE3M2M5NWFjNDY4YzU5ZWMyODQ2ZSIsIm5iZiI6MTc4OTczNzM0Ny42NzEsInN1YiI6IjZhYWQzOTgzZTA1MDgwOGFiMTM1ZjVlMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.glSxJTCM98AkavrABRSfSLg9Rg3pHy_ugB3muZh_7cc"
+            "Authorization": f"Bearer {settings.movie_api}"
             }
 
 

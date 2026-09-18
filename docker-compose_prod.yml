@@ -17,7 +17,8 @@ services:
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
       - REDIS_HOSTNAME=redis
       - REDIS_PORT=6379
-      - CORS_ORIGINS=${CORS_ORIGINS}
+      - MOVIE_API=${MOVIE_API}
+      # - CORS_ORIGINS=${CORS_ORIGINS}
 
   postgres:
     image: postgres

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     redis_hostname: str
     redis_port: int
     cors_origins: str = ""
+    movie_api: str
 
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
 
