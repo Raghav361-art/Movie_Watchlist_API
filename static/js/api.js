@@ -87,7 +87,7 @@ const API = {
   },
 
   getMovie(id) {
-    return this.request(`/movies/${id}`, { auth: false });
+    return this.request(`/movies/${id}`);
   },
 
   createMovie(movie) {
