@@ -80,3 +80,8 @@ async def dashboard(request: Request):
 @app.get("/api")
 def root():
     return {"Message": "Hello, I'm Raghav", "Instructions": "Explore my API at www.raghav-art.me/docs"}
+
+@app.post("/flush")
+def flush():
+    redis_client.flushall()
+    return

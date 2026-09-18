@@ -39,6 +39,185 @@ const modalTitle = document.getElementById("modal-title");
 const movieForm = document.getElementById("movie-form");
 const modalError = document.getElementById("modal-error");
 const cancelModalBtn = document.getElementById("cancel-modal");
+const movieSearch = document.getElementById("movie-search");
+const movieSearchInput = document.getElementById("movie-search-input");
+const movieSearchResults = document.getElementById("movie-search-results");
+
+let movieSearchDebounce;
+let movieSearchController = null;
+let movieSearchItems = [];
+let movieSearchRequestId = 0;
+
+movieSearchInput.addEventListener("input", () => {
+  clearTimeout(movieSearchDebounce);
+  movieSearchRequestId += 1;
+
+  const query = movieSearchInput.value.trim();
+
+  if (query.length < 2) {
+    if (movieSearchController) movieSearchController.abort();
+    movieSearchResults.innerHTML = "";
+    movieSearchResults.classList.remove("open");
+    movieSearchInput.setAttribute("aria-expanded", "false");
+    return;
+  }
+
+  movieSearchDebounce = setTimeout(() => {
+    searchMovies(query);
+  }, 350);
+});
+async function searchMovies(query) {
+  if (movieSearchController) {
+    movieSearchController.abort();
+  }
+
+  const requestId = movieSearchRequestId;
+  movieSearchController = new AbortController();
+
+  movieSearchResults.innerHTML = `
+    <div class="movie-search-empty">
+      Searching...
+    </div>
+  `;
+
+  movieSearchResults.classList.add("open");
+  movieSearchInput.setAttribute("aria-expanded", "true");
+
+  try {
+    const response = await fetch(
+      `/movies/search?query=${encodeURIComponent(query)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${API.token()}`
+        },
+        signal: movieSearchController.signal
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Movie search failed");
+    }
+
+    const movies = await response.json();
+
+    if (requestId !== movieSearchRequestId) return;
+    renderMovieSearchResults(movies);
+
+  } catch (err) {
+    if (err.name === "AbortError" || requestId !== movieSearchRequestId) {
+      return;
+    }
+
+    movieSearchResults.innerHTML = `
+      <div class="movie-search-empty">
+        Couldn't search for movies. Please try again.
+      </div>
+    `;
+  }
+}
+function renderMovieSearchResults(movies) {
+  movieSearchResults.innerHTML = "";
+  movieSearchItems = Array.isArray(movies) ? movies : [];
+
+  if (movieSearchItems.length === 0) {
+    movieSearchResults.innerHTML = `
+      <div class="movie-search-empty">
+        No movies found.
+      </div>
+    `;
+
+    movieSearchResults.classList.add("open");
+    return;
+  }
+
+  movieSearchItems.forEach((movie, index) => {
+    const result = document.createElement("div");
+    result.className = "movie-search-result";
+    result.setAttribute("role", "option");
+
+    const releaseDate = movie.release_year || "";
+    const releaseYear = releaseDate ? String(releaseDate).slice(0, 4) : "Unknown year";
+    const rating = movie.rating === null || movie.rating === undefined
+      ? "Not rated"
+      : String(movie.rating);
+    const director = movie.director || "Director unavailable";
+    const genres = movie.genres || "Genre unavailable";
+
+    result.innerHTML = `
+      <div class="movie-search-info">
+        <div class="movie-search-title">
+          ${escapeHtml(movie.title || "Untitled")}
+        </div>
+
+        <div class="movie-search-meta">
+          <span>${escapeHtml(releaseYear)}</span>
+          <span>${escapeHtml(director)}</span>
+          <span>${escapeHtml(genres)}</span>
+          <span>Rating: ${escapeHtml(rating)}</span>
+        </div>
+      </div>
+
+      <button
+        class="btn btn-primary btn-sm movie-search-add"
+        data-result-index="${index}"
+        type="button"
+      >
+        Add
+      </button>
+    `;
+
+    movieSearchResults.appendChild(result);
+  });
+
+  movieSearchResults.classList.add("open");
+  movieSearchInput.setAttribute("aria-expanded", "true");
+}
+movieSearchResults.addEventListener("click", async (e) => {
+  const button = e.target.closest(".movie-search-add");
+
+  if (!button) return;
+
+  const movie = movieSearchItems[Number(button.dataset.resultIndex)];
+  if (!movie || button.disabled) return;
+
+  button.disabled = true;
+  button.textContent = "Adding...";
+
+  try {
+    await API.createMovie({
+      title: movie.title || "Untitled",
+      director: movie.director || "Unknown",
+      genre: movie.genres || "Other",
+      release_year: parseInt(String(movie.release_year || "").slice(0, 4), 10),
+      rating: Number.isFinite(Number(movie.rating)) && Number(movie.rating) <= 10
+        ? Number(movie.rating)
+        : null,
+      watched: false
+    });
+
+    showToast("Added to your watchlist.");
+
+    button.textContent = "Added";
+
+    loadMovies();
+
+  } catch (err) {
+    button.disabled = false;
+    button.textContent = "Add";
+
+    showToast(
+      err.message || "Couldn't add movie.",
+      true
+    );
+  }
+});
+
+document.addEventListener("click", (e) => {
+  if (!movieSearch.contains(e.target)) {
+    movieSearchResults.classList.remove("open");
+    movieSearchInput.setAttribute("aria-expanded", "false");
+  }
+});
 
 // ---------------------------------------------------------------- rendering
 function starRow(rating) {

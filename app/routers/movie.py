@@ -5,6 +5,7 @@ from .. import schemas, models, database, oauth2, config
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 import redis.asyncio as aioredis
+from test import QueryMovie
 
 redis_client = aioredis.Redis(host=config.settings.redis_hostname, port=config.settings.redis_port, decode_responses=True)
 
@@ -86,6 +87,13 @@ async def listAll(genre: str | None = None, search: str = "", watched: bool | No
 #-----------------------------------------------------------------------------------------------------------------------
 # Searching a Movie By ID
 #-----------------------------------------------------------------------------------------------------------------------
+@router.get("/search")
+async def search_movies(query: str):
+    res = QueryMovie(query=query)
+
+    return res.get_all()
+
+
 @router.get("/{id}", response_model=schemas.MovieWithLikes)
 async def search(id: int, db: sessionDep, get_current_user: int = Depends(oauth2.get_current_user)):
     user_liked = (select(models.Vote.movie_id).where(models.Vote.movie_id == models.Movie.id, models.Vote.user_id == get_current_user.id).correlate(models.Movie).exists())

@@ -1,57 +1,104 @@
-import redis.asyncio as redis
-import asyncio
-from redis.exceptions import WatchError
+import requests
+
+class QueryMovie:
+    GENRES = {
+        28: "Action",
+        12: "Adventure",
+        16: "Animation",
+        35: "Comedy",
+        80: "Crime",
+        99: "Documentary",
+        18: "Drama",
+        10751: "Family",
+        14: "Fantasy",
+        36: "History",
+        27: "Horror",
+        10402: "Music",
+        9648: "Mystery",
+        10749: "Romance",
+        878: "Science Fiction",
+        10770: "TV Movie",
+        53: "Thriller",
+        10752: "War",
+        37: "Western"
+    }
+
+    def __init__(self, query):
+        self.query = query
 
 
-# async def inc(name):
-#     async with redis.Redis(host="localhost", port=6379, decode_responses=True) as r:
 
-#         async with r.pipeline(transaction=True) as pipe:
-#             while True:
-#                 try:
-#                     print(name, "watching")
-#                     await pipe.watch("counter")
-#                     curr = int(await r.get("counter"))
-#                     await asyncio.sleep(1)
-#                     pipe.multi()
-#                     pipe.set("counter", str(curr+1))
-#                     await pipe.execute()
-#                     print("success")
-#                     break
-#                 except WatchError:
-#                     continue
+    def get_all(self):
+        url_qu = f"https://api.themoviedb.org/3/search/movie?query={self.query}"
+
+        headers = {
+            "accept": "application/json",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNjdlN2NkM2I0ZmE3M2M5NWFjNDY4YzU5ZWMyODQ2ZSIsIm5iZiI6MTc4OTczNzM0Ny42NzEsInN1YiI6IjZhYWQzOTgzZTA1MDgwOGFiMTM1ZjVlMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.glSxJTCM98AkavrABRSfSLg9Rg3pHy_ugB3muZh_7cc"
+            }
 
 
-# async def test():
-#     async with redis.Redis(host="localhost", port=6379, decode_responses=True) as r:
+        resp_qu = requests.get(url_qu, headers=headers, timeout=15)
+        resp_qu.raise_for_status()
+        data_qu = resp_qu.json()
 
-#         await r.set("counter", "0")    
+        query_results = []
 
-#     await asyncio.gather(inc("t1"), inc("t2"), inc("t3"), inc("t4"))
+        for i in range(min(len(data_qu["results"]), 5)):
+            query = data_qu["results"][i]
+            id = query["id"]
+            img_path = query["poster_path"]
 
-#     async with redis.Redis(host="localhost", port=6379, decode_responses=True) as r:
 
-#         print(await r.get("counter"))
+            url = f"https://api.themoviedb.org/3/movie/{id}/credits?language=en-US"
+            
+            try:
+                response = requests.get(url, headers=headers, timeout=15)
+                response.raise_for_status()
+                data = response.json()
+            except requests.RequestException:
+                data = {"crew": []}
 
-# asyncio.run(test())
+            title = query["title"]
+            director = next((person["name"]for person in data["crew"] if person["job"] == "Director"), None)
+            release_year = query["release_date"]
+            rating = query["vote_average"]
+            img_url = f"https://image.tmdb.org/t/p/w185/{img_path}" if img_path else None
+            genres = ", ".join(
+                self.GENRES.get(genre, "Unknown") for genre in query["genre_ids"]
+            )
 
-async def pubsub_example():
-    async with redis.Redis(
-        host='localhost', port=6379, decode_responses=True
-    ) as r:
-        async with r.pubsub() as pubsub:
-            await pubsub.subscribe('channel-1')
+            query_results.append({"title":title, "director":director, "release_year":release_year, "rating":int(rating), "img_url":img_url, "genres":genres})
 
-            async def reader():
-                async for message in pubsub.listen():
-                    if message['type'] == 'message':
-                        print(message['data'])
-                        # hello
-                        break
+        return query_results
 
-            reader_task = asyncio.create_task(reader())
-            await asyncio.sleep(0.1)
-            await r.publish('channel-1', 'hello123')
-            await reader_task
 
-asyncio.run(pubsub_example())
+
+
+# for x in QueryMovie("spider-man").get_all():
+#     print(x["title"])
+
+
+# {
+#   "page": 1,
+#   "results": [
+#     {
+#       "adult": false,
+#       "backdrop_path": "/snYOXem8pUGOffnLbbGq4aB1pg4.jpg",
+#       "genre_ids": [
+#         28,
+#         80,
+#         53
+#       ],
+#       "id": 1291608,
+#       "title": "Dhurandhar",
+#       "original_language": "hi",
+#       "original_title": "धुरंधर",
+#       "overview": "In the early 2000s, an undercover operative infiltrates Karachi's underworld, breaking into its inner circle to dismantle a violent nexus from within.",
+#       "popularity": 8.4424,
+#       "poster_path": "/8FHOtUpNIk5ZPEay2N2EY5lrxkv.jpg",
+#       "release_date": "2025-12-05",
+#       "softcore": false,
+#       "video": false,
+#       "vote_average": 7.33,
+#       "vote_count": 355
+#     },

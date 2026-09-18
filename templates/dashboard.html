@@ -1,8 +1,5 @@
-{% extends "base.html" %}
-
-{% block title %}Your Watchlist{% endblock %}
-
-{% block body %}
+{% extends "base.html" %} {% block title %}Your Watchlist{% endblock %} {% block
+body %}
 <header class="topbar">
   <div class="topbar-inner">
     <div class="brand"><span class="brand-mark">●</span> Watchlist</div>
@@ -21,6 +18,27 @@
         <p>Track what you've watched, queue what's next, and rate as you go.</p>
       </div>
       <button id="add-movie-btn" class="btn btn-primary">+ Add movie</button>
+    </div>
+  </div>
+
+  <div class="movie-search" id="movie-search">
+    <label class="movie-search-label" for="movie-search-input"
+      >Find a movie to add</label
+    >
+    <div class="movie-search-box">
+      <input
+        type="text"
+        id="movie-search-input"
+        placeholder="Search for a movie to add..."
+        autocomplete="off"
+        aria-expanded="false"
+        aria-controls="movie-search-results"
+      />
+      <div
+        id="movie-search-results"
+        class="movie-search-results"
+        role="listbox"
+      ></div>
     </div>
   </div>
 
@@ -62,7 +80,9 @@
   <div id="empty-state" class="empty-state hidden">
     <h3>Nothing here yet</h3>
     <p>Start your reel by adding the first movie to your watchlist.</p>
-    <button id="empty-add-btn" class="btn btn-primary">+ Add your first movie</button>
+    <button id="empty-add-btn" class="btn btn-primary">
+      + Add your first movie
+    </button>
   </div>
 
   <div class="pagination" id="pagination"></div>
@@ -101,8 +121,8 @@
           <label for="m-rating">Rating (0–10)</label>
           <input type="number" id="m-rating" min="0" max="10" required />
         </div>
-        <div class="field" style="display:flex; align-items:flex-end;">
-          <label class="checkbox-row" style="margin-bottom: 12px;">
+        <div class="field" style="display: flex; align-items: flex-end">
+          <label class="checkbox-row" style="margin-bottom: 12px">
             <input type="checkbox" id="m-watched" />
             Watched
           </label>
@@ -110,14 +130,14 @@
       </div>
 
       <div class="modal-actions">
-        <button type="button" id="cancel-modal" class="btn btn-ghost">Cancel</button>
+        <button type="button" id="cancel-modal" class="btn btn-ghost">
+          Cancel
+        </button>
         <button type="submit" class="btn btn-primary">Save</button>
       </div>
     </form>
   </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
+{% endblock %} {% block scripts %}
 <script src="{{ url_for('static', path='js/dashboard.js') }}"></script>
 {% endblock %}

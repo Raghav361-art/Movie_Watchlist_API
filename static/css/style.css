@@ -396,6 +396,111 @@ button, input, select {
 
 .hero p { color: var(--text-muted); margin-top: 8px; max-width: 46ch; }
 
+/* --------------------------- Movie Search --------------------------- */
+
+.movie-search {
+  padding: 24px 0 0;
+}
+
+.movie-search-label {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-bottom: 6px;
+}
+
+.movie-search-box {
+  position: relative;
+  max-width: 700px;
+}
+
+#movie-search-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  outline: none;
+}
+
+.movie-search #movie-search-input:focus,
+.movie-search #movie-search-input:focus-visible {
+  border-color: #314e70 !important;
+  box-shadow: 0 0 0 3px rgba(49, 78, 112, 0.18) !important;
+}
+
+.movie-search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-deep);
+  z-index: 20;
+  overflow: hidden;
+  display: none;
+}
+
+.movie-search-results.open {
+  display: block;
+}
+
+.movie-search-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--stroke);
+}
+
+.movie-search-result:hover {
+  background: var(--surface-2);
+}
+
+.movie-search-result:last-child {
+  border-bottom: none;
+}
+
+.movie-search-info {
+  min-width: 0;
+}
+
+.movie-search-title {
+  font-weight: 600;
+}
+
+.movie-search-meta {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-top: 3px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.movie-search .movie-search-add,
+.movie-search .movie-search-add.btn-primary {
+  flex-shrink: 0;
+  background: #314e70 !important;
+  border-color: #314e70 !important;
+  color: #f4f6f8 !important;
+}
+
+.movie-search .movie-search-add:hover,
+.movie-search .movie-search-add.btn-primary:hover {
+  background: #243b55 !important;
+  border-color: #243b55 !important;
+}
+
+.movie-search-empty {
+  padding: 14px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
 .filters {
   padding: 24px 0;
   display: flex;

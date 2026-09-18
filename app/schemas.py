@@ -28,6 +28,7 @@ class Movie(BaseModel):
     release_year: int = Field(ge=1888, le=2100)
     watched: bool = False
     rating: int | None = Field(default=None, ge=0, le=10)
+    img_url: str = ""
     
 
 

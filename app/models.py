@@ -16,6 +16,7 @@ class Movie(Base):
     rating = Column(INTEGER)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('CURRENT_TIMESTAMP'))
     user_id = Column(INTEGER, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    img_url = Column(String, server_default=text(""))
 
     user = relationship("Users")
 
